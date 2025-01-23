@@ -1,0 +1,26 @@
+server:
+  port: 8081
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+    web-application-type: reactive
+  cloud:
+    config:
+      enabled: false
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+jwt:
+  key: MVnKl83PNUGrCekKtf7Izs9OAxMsfQ5uuVJjIUVkvck=
+  expiration: 3600000
+#  r2dbc:
+#    url: r2dbc:postgresql://localhost:5432/userdb
+#    password: hide
+#    username: hide
+#    pool:
+#      enabled: true
+#      initial-size: 20
+#      max-size: 50

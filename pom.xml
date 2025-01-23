@@ -10,5 +10,7 @@
   <modules>
     <module>common-dto</module>
     <module>user-management-service</module>
+    <module>common-security</module>
+    <module>common-app</module>
   </modules>
 </project>

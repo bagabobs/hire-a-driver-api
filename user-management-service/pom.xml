@@ -32,12 +32,11 @@
 		<spring-cloud.version>2024.0.0</spring-cloud.version>
 		<jooq.codegen.skip>true</jooq.codegen.skip>
 		<common-dto.version>0.0.1</common-dto.version>
+		<common-security.version>0.0.1</common-security.version>
+		<common-app.version>0.0.1</common-app.version>
+		<jjwt.version>0.11.5</jjwt.version>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jooq</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
@@ -66,7 +65,6 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -78,11 +76,6 @@
 			<artifactId>spring-boot-docker-compose</artifactId>
 			<scope>runtime</scope>
 			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -124,6 +117,45 @@
 			<artifactId>common-dto</artifactId>
 			<version>${common-dto.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.baga</groupId>
+			<artifactId>common-security</artifactId>
+			<version>${common-security.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.baga</groupId>
+			<artifactId>common-app</artifactId>
+			<version>${common-app.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-r2dbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>r2dbc-postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>db2</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>r2dbc-postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -136,96 +168,5 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</path>
-					</annotationProcessorPaths>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.jooq</groupId>
-				<artifactId>jooq-codegen-maven</artifactId>
-				<executions>
-					<!-- Attach the plugin to the generate-sources phase but disable it by default -->
-					<execution>
-						<id>jooq-codegen</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<!-- JDBC Connection -->
-							<jdbc>
-								<driver>org.postgresql.Driver</driver>
-								<url>jdbc:postgresql://localhost:5432/userdb</url>
-								<user>hide</user>
-								<password>hide</password>
-							</jdbc>
-
-							<!-- JOOQ Generator Configuration -->
-							<generator>
-								<generate>
-									<springAnnotations>true</springAnnotations>
-									<daos>true</daos>
-									<pojos>true</pojos>
-								</generate>
-								<name>org.jooq.codegen.DefaultGenerator</name>
-								<database>
-									<name>org.jooq.meta.postgres.PostgresDatabase</name>
-									<inputSchema>public</inputSchema>
-								</database>
-								<target>
-									<packageName>com.baga.usermanagementservice.entity</packageName>
-									<directory>target/generated-sources/jooq</directory>
-								</target>
-							</generator>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<skip>${jooq.codegen.skip}</skip>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>add-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>target/generated-sources/jooq</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>
