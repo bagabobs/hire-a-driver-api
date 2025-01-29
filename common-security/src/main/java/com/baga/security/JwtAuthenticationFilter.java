@@ -46,7 +46,8 @@ public class JwtAuthenticationFilter extends AuthenticationWebFilter {
             List<GrantedAuthority> grantedAuthorities = jwtUtil.getRoles(token)
                     .stream().map(role -> (GrantedAuthority) new SimpleGrantedAuthority(role))
                     .toList();
-            return Mono.just(new UsernamePasswordAuthenticationToken(username, token, grantedAuthorities));
+            Authentication authentication = new UsernamePasswordAuthenticationToken(username, token, grantedAuthorities);
+            return Mono.just(authentication);
         }
 
         private String extractToken(HttpHeaders headers) {

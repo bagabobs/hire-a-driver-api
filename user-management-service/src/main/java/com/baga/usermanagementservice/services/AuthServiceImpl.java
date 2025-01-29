@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
     public Mono<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto) {
         Query queryUser = Query.query(Criteria.where("email").is(loginRequestDto.username()));
         Mono<UserEntity> monoUserEntity = entityTemplate.selectOne(queryUser, UserEntity.class)
-                .publishOn(Schedulers.boundedElastic()).onErrorResume(e -> Mono.empty());
+                .switchIfEmpty(Mono.error(new IllegalStateException("User not found")));
 
         String userRoleQuery = """
                 SELECT r.* FROM user_role ur
@@ -67,7 +66,8 @@ public class AuthServiceImpl implements AuthService {
                             .updatedBy(row.get("updated_by", String.class))
                             .updatedDate(row.get("updated_date", LocalDateTime.class))
                             .build();
-                }).all();
+                }).all()
+                .switchIfEmpty(Mono.error(new IllegalStateException("Role user not found")));
         return monoUserEntity
                 .flatMap(user -> roleEntityMono.collectList()
                         .handle((role, sink) -> {

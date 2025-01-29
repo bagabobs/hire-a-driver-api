@@ -1,13 +1,10 @@
 package com.baga.usermanagementservice.controller;
 
-import com.baga.dto.user.CreateUserRequestDto;
-import com.baga.dto.user.CreateUserResponseDto;
-import com.baga.dto.user.LoginRequestDto;
+import com.baga.dto.user.*;
 import com.baga.usermanagementservice.services.UserService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -22,5 +19,24 @@ public class UserController {
     @PostMapping
     public Mono<CreateUserResponseDto> createUser(@RequestBody CreateUserRequestDto createUserRequestDto) {
         return userService.createUser(createUserRequestDto);
+    }
+
+    @PutMapping
+    public Mono<UserDto> updateUser(@Valid @RequestBody UpdateUserRequestDto requestDto) {
+        return userService.updateUser(requestDto);
+    }
+
+    @DeleteMapping
+    public Mono<String> deleteUser(@Valid @RequestBody DeleteUserRequestDto requestDto) {
+        return userService.deleteUser(requestDto);
+    }
+
+    @GetMapping
+    public Flux<UserDto> getAllUsers(@RequestParam(required = false, name = "search_name") String searchName,
+                                     @RequestParam(required = false) String sortBy,
+                                     @RequestParam(required = false) String order,
+                                     @RequestParam int size,
+                                     @RequestParam int page) {
+        return userService.getAllUsers(page, size, searchName, sortBy, order);
     }
 }
