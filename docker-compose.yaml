@@ -22,9 +22,9 @@ services:
       POSTGRES_PASSWORD: hide
     volumes:
       - ./init-db:/docker-entrypoint-initdb.d
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_hide:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
 volumes:
-  postgres_data:
+  postgres_data_hide:

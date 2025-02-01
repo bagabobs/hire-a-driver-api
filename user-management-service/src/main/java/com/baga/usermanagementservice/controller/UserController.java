@@ -21,6 +21,11 @@ public class UserController {
         return userService.createUser(createUserRequestDto);
     }
 
+    @PostMapping("/create-sa")
+    public Mono<CreateUserResponseDto> createUserSa(@RequestBody CreateUserRequestDto createUserRequestDto) {
+        return userService.createUserSa(createUserRequestDto);
+    }
+
     @PutMapping
     public Mono<UserDto> updateUser(@Valid @RequestBody UpdateUserRequestDto requestDto) {
         return userService.updateUser(requestDto);

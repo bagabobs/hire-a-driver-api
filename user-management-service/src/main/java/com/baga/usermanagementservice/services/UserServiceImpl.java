@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<CreateUserResponseDto> createUser(CreateUserRequestDto createUserRequestDto) {
         Mono<RoleEntity> roleEntity = userEntityTemplate
-                .selectOne(Query.query(Criteria.where("role_name").is("ROLE_A")), RoleEntity.class)
+                .selectOne(Query.query(Criteria.where("role_name").is("ROLE_USER")), RoleEntity.class)
                 .switchIfEmpty(Mono.error(new IllegalStateException("No role found")));
         return username.flatMap(username -> {
                     UserEntity userEntity = UserEntity.builder()
@@ -76,6 +76,51 @@ public class UserServiceImpl implements UserService {
                 .onErrorResume(e -> {
                     log.error(e.getMessage(), e);
                     return Mono.error(e);
+                });
+    }
+
+    @Override
+    public Mono<CreateUserResponseDto> createUserSa(CreateUserRequestDto createUserRequestDto) {
+        String queryCheckRoleSaIsEmpty = """
+                SELECT count(1) FROM roles ro
+                JOIN user_role ur ON ur.role_id = ro.id
+                WHERE ro.role_name = 'ROLE_SA'
+                """;
+        return userEntityTemplate.getDatabaseClient()
+                .sql(queryCheckRoleSaIsEmpty)
+                .fetch()
+                .one()
+                .flatMap(result -> {
+                    Long count = (Long) result.get("count");
+                    if (count == 0) {
+                        UserEntity userEntity = UserEntity.builder()
+                                .name(createUserRequestDto.name())
+                                .email(createUserRequestDto.email())
+                                .password(passwordEncoder.encode(createUserRequestDto.password()))
+                                .createdBy("SYSTEM")
+                                .createdDate(LocalDateTime.now())
+                                .id(UUID.randomUUID())
+                                .build();
+                        return userEntityTemplate.insert(userEntity)
+                                .flatMap(createUserResult ->
+                                        userEntityTemplate.selectOne(Query.query(Criteria.where("role_name").is("ROLE_SA")), RoleEntity.class)
+                                                .switchIfEmpty(Mono.error(new IllegalStateException("No role found")))
+                                                .flatMap(roleResult -> {
+                                                    UserRoleEntity userRoleEntity = UserRoleEntity
+                                                            .builder()
+                                                            .roleId(roleResult.getId())
+                                                            .userId(createUserResult.getId())
+                                                            .build();
+                                                    return userEntityTemplate.insert(userRoleEntity)
+                                                            .map(u -> CreateUserResponseDto.builder()
+                                                                    .id(createUserResult.getId())
+                                                                    .email(createUserResult.getEmail())
+                                                                    .name(createUserResult.getName())
+                                                                    .build());
+                                                })
+                                );
+                    }
+                    return Mono.error(new IllegalStateException("User for Role SA is already exists"));
                 });
     }
 
@@ -147,8 +192,8 @@ public class UserServiceImpl implements UserService {
     public Flux<UserDto> getAllUsers(int page, int size, String searchName, String sortBy, String order) {
         Criteria criteria = Criteria.empty();
         if (searchName != null && !searchName.isEmpty()) {
-            criteria = Criteria.where("name").like("%" + searchName.toLowerCase(Locale.ROOT) + "%");
-            criteria = criteria.or("email").like("%" + searchName.toLowerCase(Locale.ROOT) + "%");
+            criteria = Criteria.where("name").like("%" + searchName.toLowerCase(Locale.ROOT) + "%").ignoreCase(true);
+            criteria = criteria.or("email").like("%" + searchName.toLowerCase(Locale.ROOT) + "%").ignoreCase(true);
         }
 
         Sort sort = Sort.unsorted();
